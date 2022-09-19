@@ -1,6 +1,6 @@
-#from numba import cuda, float64
+from numba import cuda, float64
 import numpy as np
-#import cupy as cp
+import cupy as cp
 import sys
 import os
 import time
@@ -25,9 +25,11 @@ if __name__ == '__main__':
 
     Dirs = ['m1/', 'm2/', 'results/']
 
-    m1file = Dirs[0] + filename 
-    m2file = Dirs[1] + filename 
+    m1file = Dirs[0] + filename + ".txt"
+    m2file = Dirs[1] + filename + ".txt"
     resfile = Dirs[2] + filename 
+    CPU_resfile = Dirs[2] + "CPU_" + filename 
+    GPU_resfile = Dirs[2] + "GPU_" + filename 
 
     print('Reading m1')
 
@@ -38,7 +40,7 @@ if __name__ == '__main__':
     f.close()
     m1 = np.array(m1)
 
-    print(m1)
+    #print(m1)
 
     print('Reading m2')
 
@@ -49,7 +51,7 @@ if __name__ == '__main__':
     f.close()
     m2 = np.array(m2)
 
-    print(m2)
+    #print(m2)
 
     #Allocating result
     res = np.zeros((N, N), dtype = dtype) 
@@ -70,6 +72,8 @@ if __name__ == '__main__':
 
     print('loaded variables to GPU')
 
+    times["gpu_alloc"] = time.perf_counter() - times["gpu"]
+
 # calculations
 
     d_res = cp.matmul(d_m1, d_m2)
@@ -88,7 +92,9 @@ if __name__ == '__main__':
     f.write('Time: '+str(times["end"] - times["start"])+'\n')
     f.write('CPU Time: '+str(times["cpu"])+'\n')
     f.write('GPU Time: '+str(times["gpu"])+'\n')
+    f.write('GPU allocation Time: '+str(times["gpu_alloc"])+'\n')
+    f.write('GPU calculation Time: '+str(times["gpu"] - times["gpu_alloc"])+'\n')
     f.close()
-    np.savetxt("GPU_"+resfile, res)
-    np.savetxt("CPU_"+resfile, cpu_res)
+    np.savetxt(GPU_resfile, res)
+    np.savetxt(CPU_resfile, cpu_res)
     print('Done')
