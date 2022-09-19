@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Project
+# These need to be generated or imported via GLOBUS
+m1/*
+m2/*
+results/*
