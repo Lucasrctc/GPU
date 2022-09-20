@@ -62,7 +62,9 @@ if __name__ == '__main__':
 
     times["cpu"] = time.perf_counter() - times["cpu"]
 
-    #print('Transfer variables to GPU')
+    np.savetxt(CPU_resfile, cpu_res)
+
+    print('Transfer variables to GPU')
 
     times["gpu"] = time.perf_counter()
 
@@ -70,16 +72,19 @@ if __name__ == '__main__':
     d_res = cp.array(res) 
     d_m2 = cp.array(m2)
 
-    print('loaded variables to GPU')
+#   print('loaded variables to GPU')
 
     times["gpu_alloc"] = time.perf_counter() - times["gpu"]
 
 # calculations
 
     d_res = cp.matmul(d_m1, d_m2)
+
+    times["gpu_calc"] = time.perf_counter() - times["gpu"]
+
     res = cp.asnumpy(d_res)
 
-    times["gpu"] = time.perf_counter() - times["gpu"]
+    times["gpu_return"] = time.perf_counter() - times["gpu"]
 
     if np.isnan(res).any():
         print('BATMAN'*300)
@@ -91,10 +96,9 @@ if __name__ == '__main__':
     times["end"] = time.perf_counter()
     f.write('Time: '+str(times["end"] - times["start"])+'\n')
     f.write('CPU Time: '+str(times["cpu"])+'\n')
-    f.write('GPU Time: '+str(times["gpu"])+'\n')
+    f.write('GPU Time: '+str(times["gpu_return"])+'\n')
     f.write('GPU allocation Time: '+str(times["gpu_alloc"])+'\n')
-    f.write('GPU calculation Time: '+str(times["gpu"] - times["gpu_alloc"])+'\n')
+    f.write('GPU calculation Time: '+str(times["gpu_calc"] - times["gpu_alloc"])+'\n')
     f.close()
     np.savetxt(GPU_resfile, res)
-    np.savetxt(CPU_resfile, cpu_res)
     print('Done')
