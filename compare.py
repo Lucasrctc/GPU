@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     #print(m1)
 
-    print('Reading m2')
+    print('Reading GPU file')
 
     m2 = []
     f = open(GPU_resfile, 'r')
