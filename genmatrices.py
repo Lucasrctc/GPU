@@ -6,7 +6,7 @@ import os
 
 N = int(sys.argv[1])
 if len(sys.argv) > 2:
-    M = int(sys.argv[1])
+    M = int(sys.argv[2])
 else:
     M = -1
 
@@ -26,17 +26,19 @@ if __name__ == '__main__':
 
     Dirs = ['m1/', 'm2/']
 
-    m1file = Dirs[0] + str(N) + ".txt"
-    m2file = Dirs[1] + str(N) + ".txt"
 
     print('Writing m1')
 
+    m1file = Dirs[0] + str(N) + ".txt"
     writeFile(N, m1file)
     for i in range(-1, M - N - 1):
+        m1file = Dirs[0] + str(N + i + 2) + ".txt"
         writeFile(N + i + 2, m1file)
 
     print('Writing m2')
 
+    m2file = Dirs[1] + str(N) + ".txt"
     writeFile(N, m2file)
     for i in range(-1, M - N - 1):
+        m2file = Dirs[1] + str(N + i + 2) + ".txt"
         writeFile(N + i + 2, m2file)
