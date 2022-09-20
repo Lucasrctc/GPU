@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     times["cpu"] = time.perf_counter()
 
-    cpu_res = m1*m2
+    cpu_res = np.matmul(m1,m2)
 
     times["cpu"] = time.perf_counter() - times["cpu"]
 
