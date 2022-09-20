@@ -1,6 +1,6 @@
 from numba import cuda, float64
 import numpy as np
-import cupy as cp
+from cupy import array, matmul, asnumpy
 import sys
 import os
 import time
@@ -68,9 +68,9 @@ if __name__ == '__main__':
 
     times["gpu"] = time.perf_counter()
 
-    d_m1 = cp.array(m1) 
-    d_res = cp.array(res) 
-    d_m2 = cp.array(m2)
+    d_m1 = array(m1) 
+    d_res = array(res) 
+    d_m2 = array(m2)
 
 #   print('loaded variables to GPU')
 
@@ -78,11 +78,11 @@ if __name__ == '__main__':
 
 # calculations
 
-    d_res = cp.matmul(d_m1, d_m2)
+    d_res = matmul(d_m1, d_m2)
 
     times["gpu_calc"] = time.perf_counter() - times["gpu"]
 
-    res = cp.asnumpy(d_res)
+    res = asnumpy(d_res)
 
     times["gpu_return"] = time.perf_counter() - times["gpu"]
 
