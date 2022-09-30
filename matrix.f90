@@ -12,6 +12,8 @@ PROGRAM MATS
     ALLOCATE(y(n, n))
     READ(12,*) y
     CLOSE(12)
+    x = TRANSPOSE(x)
+    y = TRANSPOSE(y)
     ALLOCATE(res(n, n))
     res = MATMUL(x, y)
     DO i = 1, n
