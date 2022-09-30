@@ -9,7 +9,7 @@ import time
 # Input matrix files m1/filename, m2/filename
 
 # So as not to truncate the np arrays when printing
-np.set_printoptions(thresulthold=np.inf)
+np.set_printoptions(threshold=np.inf)
 
 # Start timer
 times = {"start":time.perf_counter()}
