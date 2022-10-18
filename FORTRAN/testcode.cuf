@@ -1,0 +1,35 @@
+    subroutine modify ( m, ldm, n, p, q, alpha, beta )
+    implicit none
+    integer ldm, n, p, q
+    real*4 m (ldm, *) , alpha , beta
+    external cublas_sscal
+    call cublas_sscal (n-p+1, alpha , m(p,q), ldm)
+    call cublas_sscal (ldm-p+1, beta, m(p,q), 1)
+    return
+    end
+    
+    program matrixmod
+    implicit none
+    integer M,N
+    parameter (M=6, N=5)
+    real*4 a(M,N)
+    integer i, j
+    external cublas_init
+    external cublas_shutdown
+
+    do j = 1, N
+        do i = 1, M
+            a(i, j) = (i-1)*M + j
+        enddo
+    enddo
+    call cublas_init
+    call modify ( a, M, N, 2, 3, 16.0, 12.0 )
+    call cublas_shutdown
+    do j = 1 , N
+        do i = 1 , M
+            write(*,"(F7.0$)") a(i,j)
+        enddo
+        write (*,*) ""
+    enddo
+    stop
+    end

@@ -1,0 +1,25 @@
+program cublasTest
+use cublas
+implicit none
+real*8, allocatable :: a(:,:),b(:,:),c(:,:)
+real*8, device, allocatable :: a_d(:,:),b_d(:,:),c_d(:,:)
+integer :: k=4, m=4, n=4
+real*8 :: alpha=1.0, beta=2.0, maxError
+real :: start, finish
+
+call cpu_time(start)
+
+allocate(a(m,k), b(k,n), c(m,n), a_d(m,k), b_d(k,n), c_d(m,n))
+a = 1; a_d = a
+b = 2; b_d = b
+c = 3; c_d = c
+call cublasDgemm('N','N',m,n,k,alpha,a_d,m,b_d,k,beta,c_d,m) ! or sgemm(..)
+c=c_d
+write(*,*) 'Maximum error: ', maxval(abs(c-14.0))
+deallocate (a,b,c,a_d,b_d,c_d)
+
+call cpu_time(finish)
+
+write(*,*) 'Elapsed Time: ', finish - start
+
+end program cublasTest

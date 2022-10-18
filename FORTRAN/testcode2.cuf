@@ -1,0 +1,72 @@
+#define IDX2F (i,j,ld) ((((j)-1)*(ld))+((i)-1))
+subroutine modify ( devPtrM, ldm, n, p, q, alpha, beta )
+implicit none
+integer sizeof_real
+parameter (sizeof_real=4)
+integer ldm, n, p, q
+#if ARCH_64
+integer*8 devPtrM
+#else
+integer*4 devPtrM
+#endif
+real*4 alpha, beta
+call cublas_sscal ( n-p+1, alpha,
+1                   devPtrM+IDX2F(p, q, ldm)*sizeof_real,
+2                   ldm)
+call cublas_sscal(ldm-p+1, beta,
+1                 devPtrM+IDX2F(p, q, ldm)*sizeof_real,
+2                 1)
+return
+end
+program matrixmod
+implicit none
+integer M,N,sizeof_real
+#if ARCH_64
+integer*8 devPtrA
+#else
+integer*4 devPtrA
+#endif
+parameter(M=6,N=5,sizeof_real=4)
+real*4 a(M,N)
+integer i,j,stat
+external cublas_init, cublas_set_matrix, cublas_get_matrix
+external cublas_shutdown, cublas_alloc
+integer cublas_alloc, cublas_set_matrix, cublas_get_matrix
+do j=1,N
+do i=1,M
+a(i,j)=(i-1)*M+j
+enddo
+enddo
+call cublas_init
+stat= cublas_alloc(M*N, sizeof_real, devPtrA)
+if (stat.NE.0) then
+write(*,*) "device memory allocation failed"
+call cublas_shutdown
+stop
+endif
+stat = cublas_set_matrix(M,N,sizeof_real,a,M,devPtrA,M)
+if (stat.NE.0) then
+call cublas_free( devPtrA )
+write(*,*) "data download failed"
+call cublas_shutdown
+stop
+endif
+
+call modify(devPtrA, M, N, 2, 3, 16.0, 12.0)
+stat = cublas_get_matrix(M, N, sizeof_real, devPtrA, M, a, M )
+if (stat.NE.0) then
+call cublas_free ( devPtrA )
+write(*,*) "data upload failed"
+call cublas_shutdown
+stop
+endif
+call cublas_free ( devPtrA )
+call cublas_shutdown
+do j = 1 , N
+do i = 1 , M
+write (*,"(F7.0$)") a(i,j)
+enddo
+write (*,*) ""
+enddo
+stop
+end      
