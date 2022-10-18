@@ -8,13 +8,16 @@ import time
 # Usage: basic.py N, filename
 # Input matrix files m1/filename, m2/filename
 
-# So as not to truncate the np arrays
+# So as not to truncate the np arrays when printing
 np.set_printoptions(threshold=np.inf)
 
 # Start timer
 times = {"start":time.perf_counter()}
 
+# Size of the matrices
 N = int(sys.argv[1])
+
+# Name of the input matrices
 filename = sys.argv[2]
 
 dtype = 'float64'
@@ -23,13 +26,17 @@ if __name__ == '__main__':
 
     print('Beginning ' + str(filename))
 
+    # Relevant directories
     Dirs = ['m1/', 'm2/', 'results/']
 
+    # Files to read
     m1file = Dirs[0] + filename + ".txt"
     m2file = Dirs[1] + filename + ".txt"
-    resfile = Dirs[2] + filename 
-    CPU_resfile = Dirs[2] + "CPU_" + filename 
-    GPU_resfile = Dirs[2] + "GPU_" + filename 
+
+    # Files to write
+    resultfile = Dirs[2] + filename 
+    CPU_resultfile = Dirs[2] + "CPU_" + filename 
+    GPU_resultfile = Dirs[2] + "GPU_" + filename 
 
     print('Reading m1')
 
@@ -53,52 +60,61 @@ if __name__ == '__main__':
 
     #print(m2)
 
-    #Allocating result
-    res = np.zeros((N, N), dtype = dtype) 
+    # Allocating result, necessary for the GPU multiplication
+    result = np.zeros((N, N), dtype = dtype) 
 
-    times["cpu"] = time.perf_counter()
+    # Measure how long the CPU takes to do the calculations
+    times["CPU"] = time.perf_counter()
 
-    cpu_res = np.matmul(m1,m2)
+    CPU_result = np.matmul(m1,m2)
 
-    times["cpu"] = time.perf_counter() - times["cpu"]
+    times["CPU"] = time.perf_counter() - times["CPU"]
 
-    np.savetxt(CPU_resfile, cpu_res)
+    # Save the result of the CPU calculations
+    np.savetxt(CPU_resultfile, CPU_result)
 
     print('Transfer variables to GPU')
 
-    times["gpu"] = time.perf_counter()
+    # Measure transfer and calculation times on the GPU
+    times["GPU"] = time.perf_counter()
 
+    # Device variables or d_var are GPU variables. array() is the function from cupy that transfers
+    # variables from RAM to VRAM
     d_m1 = array(m1) 
-    d_res = array(res) 
+    # This is why allocating the result variable was necessary, 
+    # now we have an appropriate-sized variable for the result on the GPU
+    d_result = array(result) 
     d_m2 = array(m2)
 
 #   print('loaded variables to GPU')
 
-    times["gpu_alloc"] = time.perf_counter() - times["gpu"]
+    times["GPU_alloc"] = time.perf_counter() - times["GPU"]
 
 # calculations
 
-    d_res = matmul(d_m1, d_m2)
+    d_result = matmul(d_m1, d_m2)
 
-    times["gpu_calc"] = time.perf_counter() - times["gpu"]
+    times["GPU_calc"] = time.perf_counter() - times["GPU"]
 
-    res = asnumpy(d_res)
+# Transfer back from the GPU
+    result = asnumpy(d_result)
 
-    times["gpu_return"] = time.perf_counter() - times["gpu"]
+    times["GPU_return"] = time.perf_counter() - times["GPU"]
 
-    if np.isnan(res).any():
+# Check for NaN's
+    if np.isnan(result).any():
         print('BATMAN'*300)
 
     print('Calculations complete; writing to result file')
 
-    f = open(resfile + '_time', 'w')
+    f = open(resultfile + '_time', 'w')
 
     times["end"] = time.perf_counter()
     f.write('Time: '+str(times["end"] - times["start"])+'\n')
-    f.write('CPU Time: '+str(times["cpu"])+'\n')
-    f.write('GPU Time: '+str(times["gpu_return"])+'\n')
-    f.write('GPU allocation Time: '+str(times["gpu_alloc"])+'\n')
-    f.write('GPU calculation Time: '+str(times["gpu_calc"] - times["gpu_alloc"])+'\n')
+    f.write('CPU Time: '+str(times["CPU"])+'\n')
+    f.write('GPU Time: '+str(times["GPU_return"])+'\n')
+    f.write('GPU allocation Time: '+str(times["GPU_alloc"])+'\n')
+    f.write('GPU calculation Time: '+str(times["GPU_calc"] - times["GPU_alloc"])+'\n')
     f.close()
-    np.savetxt(GPU_resfile, res)
+    np.savetxt(GPU_resultfile, result)
     print('Done')
