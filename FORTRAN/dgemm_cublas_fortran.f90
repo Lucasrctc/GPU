@@ -73,6 +73,11 @@ program main
   type(c_ptr)      :: cublas_handle
 
   double precision, target :: alpha, beta
+  
+  real :: start, finish
+
+  call cpu_time(start)
+
   error = 0
   alpha = 1d0
   beta = 1d0
@@ -130,7 +135,7 @@ program main
   do i=1,SIZE*SIZE
      if( abs( cc_gpu(i) - cc_host(i) ) > 0.00001 ) then
         error=error+1
-	print *, cc_gpu(i), cc_host(i)
+	!print *, cc_gpu(i), cc_host(i)
      endif
   enddo
 
@@ -139,10 +144,14 @@ program main
      call exit(1)
   endif
 
+  call cpu_time(finish)
+
+  write(*,*) 'Elapsed Time: ', finish - start
+  print *, "Success"
+
   deallocate( aa, stat=status )
   deallocate( bb, stat=status )
   deallocate( cc_host, stat=status )
   deallocate( cc_gpu, stat=status )
 
 end program main
-
