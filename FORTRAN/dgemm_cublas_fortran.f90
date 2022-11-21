@@ -117,7 +117,9 @@ program main
 !$omp target enter data map(to:aa,bb,cc_gpu)
 
 !$omp target data use_device_ptr(aa,bb,cc_gpu)
-  cublas_error = cublasDgemm_v2(cublas_handle,CUBLAS_OP_N, CUBLAS_OP_N, SIZE, SIZE,SIZE, alpha, c_loc(aa), &
+!  cublas_error = cublasDgemm_v2(cublas_handle,CUBLAS_OP_N, CUBLAS_OP_N, SIZE, SIZE,SIZE, alpha, c_loc(aa), &
+!  cublas_error = call dgemm_wr(CUBLAS_OP_N, CUBLAS_OP_N, SIZE, SIZE,SIZE, alpha, c_loc(aa), &
+   cublas_error = dgemm_wr(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, SIZE, SIZE,SIZE, alpha, c_loc(aa), &
        SIZE, c_loc(bb), SIZE, beta, c_loc(cc_gpu), SIZE);
 !$omp end target data
    if(cublas_error .ne. CUBLAS_STATUS_SUCCESS ) then
@@ -153,5 +155,33 @@ program main
   deallocate( bb, stat=status )
   deallocate( cc_host, stat=status )
   deallocate( cc_gpu, stat=status )
+
+      SUBROUTINE DGEMM_WR (cublas_handle,TA,TB,M,N,K &
+      	,AL,A,LDA,B,LDB,BT,C,LDC)
+      use iso_c_binding
+!     .. Scalar Arguments ..
+      implicit none
+      CHARACTER*1        TA, TB
+      real*8   AL, BT
+!     .. Array Arguments ..
+      integer(c_int)   :: cublas_error
+      type(c_ptr) :: cublas_handle
+
+      INTEGER            M, N, K, LDA, LDB, LDC
+       real*8   A( LDA, * ), B( LDB, * ), C( LDC, * )
+
+      !$omp target data use_device_ptr(aa,bb,cc_gpu)
+       cublas_error = cublasDgemm_v2(cublas_handle,1,1,M,N &
+     	,K,AL,A,LDA,B,LDB,BT,C,LDC);
+      !$omp end target data
+         if(cublas_error .ne. CUBLAS_STATUS_SUCCESS ) then
+            print *, "failed", cublas_error, cc_gpu(1)
+            call exit(1)
+         endif
+      
+         ! wait for call to finish
+         cublas_error = cudaDeviceSynchronize_v2()
+         cublas_error = cublasDestroy_v2(cublas_handle)
+!      call dgemm(TA,TB,M,N,K,AL,A,LDA,B,LDB,BT,C,LDC)
 
 end program main
