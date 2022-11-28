@@ -19,8 +19,8 @@ program main
   error = 0
   alpha = 1d0
   beta = 0d0
-  SIZE = 8192*4
-!  SIZE = 2
+!  SIZE = 8192*4
+  SIZE = 2
 
 
   print *,"SIZE*SIZE= ",SIZE*SIZE
