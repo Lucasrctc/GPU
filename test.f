@@ -6,10 +6,10 @@
       INTEGER          M, K, N, I, J
       PARAMETER        (M=2000, K=200, N=1000)
       DOUBLE PRECISION A(M,K), B(K,N), C(M,N)
-      CHARACTER*1 TA, TB
+      INTERGER TA, TB
       
       PRINT *, "This example computes real matrix C=alpha*A*B+beta*C"
-      PRINT *, "using Intel(R) MKL function dgemm, where A, B, and C"
+      PRINT *, "using CUBLAS function cublasDgemm_v2, where A, B, and C"
       PRINT *, "are matrices and alpha and beta are double precision "
       PRINT *, "scalars"
       PRINT *, ""
@@ -18,6 +18,8 @@
       PRINT *, ""
       ALPHA = 1.0 
       BETA = 0.0
+      TA = 1
+      TB = 1
       
       PRINT *, "Intializing matrix data"
       PRINT *, ""
@@ -41,7 +43,7 @@
       
       PRINT *, "Computing matrix product using Intel(R) MKL DGEMM "
       PRINT *, "subroutine"
-      CALL DGEMM_WR('N','N',M,N,K,ALPHA,A,M,B,K,BETA,C,M)
+      CALL DGEMM_WR(TA, TB, M, N, K, ALPHA, A, M, B, K, BETA, C, M)
       PRINT *, "Computations completed."
       PRINT *, ""
       
