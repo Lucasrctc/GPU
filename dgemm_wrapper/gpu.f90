@@ -121,7 +121,7 @@ subroutine mgpu(SIZE,AA,BB,CC)
 
 !$omp target enter data map(to:aa_dev,bb_dev,cc_dev)
 !$omp target data use_device_ptr(aa_dev,bb_dev,cc_dev)
-  cublas_error = cublasDgemm_v2(cublas_handle,CUBLAS_OP_N, CUBLAS_OP_N, SIZE, SIZE,SIZE, alpha, c_loc(aa_dev), &
+  call DGEMM_WR(cublas_error, cublas_handle,CUBLAS_OP_N, CUBLAS_OP_N, SIZE, SIZE,SIZE, alpha, c_loc(aa_dev), &
        SIZE, c_loc(bb_dev), SIZE, beta, c_loc(cc_dev), SIZE);
 !$omp end target data
    if(cublas_error .ne. CUBLAS_STATUS_SUCCESS ) then
